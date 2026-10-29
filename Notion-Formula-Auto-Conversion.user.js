@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Notion-Formula-Auto-Conversion
+// @name         Notion Formula Auto Conversion
 // @namespace    https://github.com/teressalodas/Notion-Formula-Auto-Conversion
 // @version      3.0
 // @description  Notion 公式智能脱壳转换（支持块级/行内自动区分、Ctrl+Shift+E 智能接管、顶部极简状态提示）
