@@ -12,6 +12,8 @@
   </a>  
 </p>
 
+<p align="center">简体中文 | <a href="./README.en.md">English</a></p>
+
 Notion Formula Auto Conversion 是一款免费开源的用户脚本，把粘贴进 Notion 的纯文本 LaTeX 公式一键转成 Notion 原生公式块或行内公式。脚本会自动判断该用块级还是行内，接管 `Ctrl+Shift+E` 这组快捷键，支持选区、当前行和全文档三级范围，并在页面顶部用一个极简胶囊提示进度。
 
 ## 安装
