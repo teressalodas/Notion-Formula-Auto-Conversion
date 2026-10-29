@@ -3,6 +3,7 @@
 // @namespace    https://github.com/teressalodas/Notion-Formula-Auto-Conversion
 // @version      3.0
 // @description  Notion 公式智能脱壳转换（支持块级/行内自动区分、Ctrl+Shift+E 智能接管、顶部极简状态提示）
+// @description:en-US  Convert pasted LaTeX into native Notion equations — auto block/inline detection, Ctrl+Shift+E takeover, minimal top indicator
 // @author       teressalodas
 // @homepageURL  https://github.com/teressalodas/Notion-Formula-Auto-Conversion
 // @supportURL   https://github.com/teressalodas/Notion-Formula-Auto-Conversion/issues
@@ -16,6 +17,55 @@
 
 (function () {
     'use strict';
+
+    const FORCE_LANG = null;
+    const SUPPORTED_LANGS = ['zh', 'en'];
+
+    const I18N = {
+        zh: {
+            mode: {
+                selection: '选区',
+                line: '当前行',
+                document: '全文档'
+            },
+            noFormula: '未检测到待转换的公式',
+            progress: (mode, done, total) => `[${mode}] 正在转换公式 (${done}/${total})...`,
+            finished: n => `转换完成，共处理 ${n} 个公式`,
+            failed: msg => `转换出错: ${msg}`,
+            logPrefix: '[Notion Formula Auto Conversion] 转换异常:'
+        },
+        en: {
+            mode: {
+                selection: 'Selection',
+                line: 'Current line',
+                document: 'Whole document'
+            },
+            noFormula: 'No formulas found to convert',
+            progress: (mode, done, total) => `[${mode}] Converting (${done}/${total})…`,
+            finished: n => `Done — ${n} formula${n === 1 ? '' : 's'} converted`,
+            failed: msg => `Conversion failed: ${msg}`,
+            logPrefix: '[Notion Formula Auto Conversion] Conversion error:'
+        }
+    };
+
+    function detectLang() {
+        if (FORCE_LANG && SUPPORTED_LANGS.includes(FORCE_LANG)) return FORCE_LANG;
+
+        const candidates = [navigator.language]
+            .concat(navigator.languages || [])
+            .concat(navigator.userLanguage || [])
+            .filter(Boolean);
+
+        for (const tag of candidates) {
+            const lower = String(tag).toLowerCase();
+            if (lower.indexOf('zh') === 0) return 'zh';
+            if (lower.indexOf('en') === 0) return 'en';
+        }
+        return 'zh';
+    }
+
+    const LANG = detectLang();
+    const T = I18N[LANG];
 
     GM_addStyle(`
         #nf-toast {
@@ -54,6 +104,7 @@
             height: 7px;
             border-radius: 50%;
             background: #2563eb;
+            flex: 0 0 auto;
         }
         #nf-toast.processing #nf-toast-dot {
             animation: nf-pulse 1s infinite ease-in-out;
@@ -168,14 +219,16 @@
         await sleep(60);
     }
 
+    const CONFIRM_LABELS = ['完成', '保存', 'Done', 'Save'];
+
     async function confirmFormulaDialog() {
         for (let i = 0; i < 18; i++) {
             const overlay = document.querySelector('.notion-overlay-container');
             if (overlay) {
-                const buttons = overlay.querySelectorAll('[role="button"]');
+                const buttons = overlay.querySelectorAll('[role="button"], button');
                 for (const btn of buttons) {
                     const txt = btn.textContent.trim();
-                    if (txt === '完成' || txt === 'Done' || txt.includes('完成') || txt.includes('Done')) {
+                    if (CONFIRM_LABELS.some(label => txt === label || txt.includes(label))) {
                         await simulateClick(btn);
                         return true;
                     }
@@ -323,7 +376,7 @@
                 const f = parseFormulas(editor.textContent);
                 if (f.length > 0) tasks.push({ editor, formulas: f });
             }
-            return { mode: '选区', tasks };
+            return { mode: 'selection', tasks };
         }
 
         if (selection && selection.anchorNode) {
@@ -334,7 +387,7 @@
             if (currentEditor && !isInvalidContext(currentEditor)) {
                 const formulas = parseFormulas(currentEditor.textContent);
                 if (formulas.length > 0) {
-                    return { mode: '当前行', tasks: [{ editor: currentEditor, formulas }] };
+                    return { mode: 'line', tasks: [{ editor: currentEditor, formulas }] };
                 }
             }
         }
@@ -349,7 +402,7 @@
                 tasks.push({ editor, formulas });
             }
         }
-        return { mode: '全文档', tasks };
+        return { mode: 'document', tasks };
     }
 
     async function runConversion(taskBundle) {
@@ -358,26 +411,27 @@
 
         try {
             const { mode, tasks } = taskBundle;
+            const modeLabel = T.mode[mode] || T.mode.document;
             const totalFormulas = tasks.reduce((sum, t) => sum + t.formulas.length, 0);
 
             if (totalFormulas === 0) {
-                showToast('未检测到待转换的公式', 'warn', 1800);
+                showToast(T.noFormula, 'warn', 1800);
                 return;
             }
 
             let converted = 0;
-            showToast(`[${mode}] 正在转换公式 (0/${totalFormulas})...`, 'processing');
+            showToast(T.progress(modeLabel, 0, totalFormulas), 'processing');
 
             for (const { editor, formulas } of [...tasks].reverse()) {
                 const doneInBlock = await processEditorBlock(editor, formulas);
                 converted += doneInBlock;
-                showToast(`[${mode}] 正在转换公式 (${converted}/${totalFormulas})...`, 'processing');
+                showToast(T.progress(modeLabel, converted, totalFormulas), 'processing');
             }
 
-            showToast(`转换完成，共处理 ${converted} 个公式`, 'done', 2000);
+            showToast(T.finished(converted), 'done', 2000);
         } catch (err) {
-            console.error('[Notion Formula Pro] 转换异常:', err);
-            showToast(`转换出错: ${err.message}`, 'warn', 3000);
+            console.error(T.logPrefix, err);
+            showToast(T.failed(err.message), 'warn', 3000);
         } finally {
             isProcessing = false;
         }
