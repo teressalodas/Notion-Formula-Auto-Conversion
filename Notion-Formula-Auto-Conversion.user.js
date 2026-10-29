@@ -8,9 +8,10 @@
 // @supportURL   https://github.com/teressalodas/Notion-Formula-Auto-Conversion/issues
 // @updateURL    https://raw.githubusercontent.com/teressalodas/Notion-Formula-Auto-Conversion/main/Notion-Formula-Auto-Conversion.user.js
 // @downloadURL  https://raw.githubusercontent.com/teressalodas/Notion-Formula-Auto-Conversion/main/Notion-Formula-Auto-Conversion.user.js
+// @icon         https://raw.githubusercontent.com/teressalodas/Notion-Formula-Auto-Conversion/main/icon.png
 // @match        https://app.notion.com/*
 // @grant        GM_addStyle
-// @license      MIT
+// @license      Apache License 2.0
 // ==/UserScript==
 
 (function () {
@@ -397,4 +398,5 @@
             runConversion(taskBundle);
         }
     }, true);
+
 })();
