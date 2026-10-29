@@ -12,6 +12,8 @@
   </a>    
 </p>
 
+<p align="center"><a href="./README.md">简体中文</a> | English</p>
+
 Notion Formula Auto Conversion is a free, open-source userscript that turns plain-text LaTeX formulas pasted into Notion into native Notion equation blocks or inline equations with a single keystroke. It decides automatically whether a formula should be block-level or inline, takes over the `Ctrl+Shift+E` shortcut, and works at three scopes — selection, current line, or the entire document — while showing progress in a minimal capsule indicator at the top of the page.
 
 ## Installation
