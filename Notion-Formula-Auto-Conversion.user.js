@@ -9,8 +9,6 @@
 // @updateURL    https://raw.githubusercontent.com/teressalodas/Notion-Formula-Auto-Conversion/main/Notion-Formula-Auto-Conversion.user.js
 // @downloadURL  https://raw.githubusercontent.com/teressalodas/Notion-Formula-Auto-Conversion/main/Notion-Formula-Auto-Conversion.user.js
 // @match        https://app.notion.com/*
-// @match        https://www.notion.so/*
-// @match        https://*.notion.site/*
 // @grant        GM_addStyle
 // @license      MIT
 // ==/UserScript==
